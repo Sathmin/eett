@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Contact Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #25D366;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1ebe57;
+        }
+        video, canvas {
+            margin-top: 20px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Contact via WhatsApp</h1>
+        <p>Click below to send a message via WhatsApp or access the camera.</p>
+        <button onclick="requestWhatsAppPermission()">Send WhatsApp Message</button>
+        <button onclick="requestCameraAccess()">Take Photo</button>
+        <video id="video" width="320" height="240" autoplay></video>
+        <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+        <img id="photo" style="display:none;" width="320" height="240" alt="Captured Photo">
+    </div>
+
+    <script>
+        // Request permission to send WhatsApp message
+        function requestWhatsAppPermission() {
+            if (confirm("Do you allow sending a WhatsApp message to +94773379451?")) {
+                const message = encodeURIComponent("Hello, this is a test message!");
+                const whatsappUrl = `https://wa.me/+94773379451?text=${message}`;
+                window.open(whatsappUrl, '_blank');
+            } else {
+                alert("Permission denied for WhatsApp message.");
+            }
+        }
+
+        // Request camera access and capture photo
+        function requestCameraAccess() {
+            if (confirm("Do you allow access to your camera to take a photo?")) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(stream => {
+                        const video = document.getElementById('video');
+                        video.srcObject = stream;
+                        video.play();
+
+                        // Capture photo after 2 seconds
+                        setTimeout(() => {
+                            const canvas = document.getElementById('canvas');
+                            const context = canvas.getContext('2d');
+                            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            const photo = document.getElementById('photo');
+                            photo.src = canvas.toDataURL('image/png');
+                            photo.style.display = 'block';
+                            video.style.display = 'none';
+                            stream.getTracks().forEach(track => track.stop()); // Stop camera
+                            alert("Photo captured! You can manually share it if needed.");
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        alert("Camera access denied or unavailable: " + err.message);
+                    });
+            } else {
+                alert("Permission denied for camera access.");
+            }
+        }
+    </script>
+</body>
+</html>
